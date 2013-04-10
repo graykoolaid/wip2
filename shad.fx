@@ -4,15 +4,11 @@ cbuffer ConstantBuffer
 }
 
 TextureCube cubeMap;
-Texture2D diffuseTexture[3];
-//Texture2D normalTexture[3];
 
 struct VOut
 {
     float4 posH : SV_POSITION;
     float3 posL : POSITION;
-	float2 Tex	: TEXCOORD;
-	int  Texnum : TEXNUM;
 };
 
 struct Vin
@@ -25,7 +21,7 @@ struct Vin
 	float4 BiNormal	: BINORMAL;
 };
 
-SamplerState samLinear
+SamplerState samTriLinearSam
 {
 	Filter = MIN_MAG_MIP_LINEAR;
 	AddressU = Wrap;
@@ -36,11 +32,11 @@ SamplerState samLinear
 VOut VShader( Vin input )
 {
     VOut output;
-
-    output.posH = mul( matFinal, input.Pos );
+	
+  //  output.posH = mul(matFinal, float4( position, 1.0f)).xyww;    // transform the vertex from 3D to 2D
+    output.posH = mul(matFinal, float4( input.Pos ));    // transform the vertex from 3D to 2D
+   // output.posL = position;
     output.posL = input.Pos;
-	output.Tex = input.Tex;
-	output.Texnum = input.TexNum;
 
     return output;
 }
@@ -48,13 +44,6 @@ VOut VShader( Vin input )
 
 float4 PShader(VOut input) : SV_TARGET
 {
-	float4 color = 1.0;
-	if( input.Texnum == 0 )
-		 color = diffuseTexture[0].Sample( samLinear, input.Tex );
-	else if( input.Texnum == 1 )
-		color =  diffuseTexture[1].Sample( samLinear, input.Tex );
-	//color =  diffuseTexture[2].Sample( samLinear, input.Tex );
-	color.a = 1.0;
-	return color;
 	return 1.0;
+    //return cubeMap.Sample(samTriLinearSam, input.posL);
 }

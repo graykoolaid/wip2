@@ -385,6 +385,7 @@
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="Object.h" />
     <CLInclude Include="resource.h" />
+    <ClInclude Include="struct.h" />
     <ResourceCompile Include="Tutorial0510.rc" />
   </ItemGroup>
   <ItemGroup>

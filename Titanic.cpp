@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include "GeometryGenerator.h"
 #include "Object.h"
+//#include "struct.h"
 
 // include the Direct3D Library file
 #pragma comment (lib, "d3d11.lib")
@@ -47,6 +48,13 @@ POINT mLastMousePos;				   // the last mouse position
 GeometryGenerator *geoGen;			   // the pointer to the geometry generator
 GeometryGenerator::MeshData skyBoxData;			   // geometry for the sky box
 GeometryGenerator::MeshData screenQuadData;		   // geometry for the screen aligned quad
+ID3D10EffectShaderResourceVariable* diffuseTextureArray;
+ID3D10EffectShaderResourceVariable* normalTextureArray;
+
+ID3D11Texture2D*            depthStencil = NULL;
+ID3D11DepthStencilView*     depthStencilView = NULL;
+ID3D11DepthStencilView *zbuffer;    // global
+
 
 // various buffer structs
 struct VERTEX{FLOAT X, Y, Z; D3DXCOLOR Color;};
@@ -225,8 +233,57 @@ void InitD3D(HWND hWnd)
     viewport.TopLeftY = 0;
     viewport.Width = SCREEN_WIDTH;
     viewport.Height = SCREEN_HEIGHT;
+	viewport.MinDepth = 0.0;
+	viewport.MaxDepth = 1.0;
 
     devcon->RSSetViewports(1, &viewport);
+
+	HRESULT hr;
+
+	ID3D11RasterizerState*		pState;
+	D3D11_RASTERIZER_DESC		raster;
+	ZeroMemory( &raster, sizeof(D3D11_RASTERIZER_DESC));
+
+	raster.FillMode = D3D11_FILL_SOLID;
+	raster.CullMode = D3D11_CULL_BACK;
+	raster.FrontCounterClockwise = FALSE;
+	raster.DepthBias = 0;
+	raster.DepthBiasClamp = 0.0f;
+	raster.SlopeScaledDepthBias = 0.0f;
+	raster.DepthClipEnable = TRUE; //set for testing otherwise true
+	raster.ScissorEnable = FALSE;
+	raster.MultisampleEnable = FALSE;
+	raster.AntialiasedLineEnable = FALSE;
+
+	hr = dev->CreateRasterizerState (&raster, &pState);
+	devcon->RSSetState( pState );
+
+	D3D11_TEXTURE2D_DESC texd;
+ZeroMemory(&texd, sizeof(texd));
+
+texd.Width = SCREEN_WIDTH;
+texd.Height = SCREEN_HEIGHT;
+texd.ArraySize = 1;
+texd.MipLevels = 1;
+texd.SampleDesc.Count = 4;
+texd.Format = DXGI_FORMAT_D32_FLOAT;
+texd.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+ID3D11Texture2D *pDepthBuffer;
+dev->CreateTexture2D(&texd, NULL, &pDepthBuffer);
+
+
+D3D11_DEPTH_STENCIL_VIEW_DESC dsvd;
+ZeroMemory(&dsvd, sizeof(dsvd));
+
+dsvd.Format = DXGI_FORMAT_D32_FLOAT;
+dsvd.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+
+dev->CreateDepthStencilView(pDepthBuffer, &dsvd, &zbuffer);
+pDepthBuffer->Release();
+
+devcon->OMSetRenderTargets(1, &backbuffer, zbuffer);
+devcon->ClearDepthStencilView(zbuffer, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
     InitPipeline();
     InitGraphics();
@@ -337,7 +394,7 @@ void InitPipeline()
 		{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 56, D3D11_INPUT_PER_VERTEX_DATA, 0 },
     };
 
-    dev->CreateInputLayout(ied, 4, VS->GetBufferPointer(), VS->GetBufferSize(), &pLayout);
+    dev->CreateInputLayout(ied, 6, VS->GetBufferPointer(), VS->GetBufferSize(), &pLayout);
     devcon->IASetInputLayout(pLayout);
 
     D3D11_BUFFER_DESC bd;
@@ -364,6 +421,10 @@ void InitPipeline()
 
 	obj = new Object();
 	obj->objLoad( "../assets/Models/bigbadman.fbx", &textures, &normalMap, dev );
+
+    devcon->PSSetShaderResources(0, obj->texArray.size(), &obj->texArray[0] );
+    devcon->PSSetShaderResources(3, obj->NormArray.size(), &obj->NormArray[0] );
+
 }
 
 
@@ -373,7 +434,7 @@ void InitPipeline()
 
 void UpdateCamera(float dt)
 {
-	float speed = 10.0f;
+	float speed = 2.0f;
 
     ShowCursor(true);
 
@@ -443,10 +504,13 @@ void RenderFrame(void)
 
 
     // clear the back buffer to a deep blue
+	devcon->ClearDepthStencilView( zbuffer, D3D11_CLEAR_DEPTH, 1.0f, 0 );
     devcon->ClearRenderTargetView(backbuffer, D3DXCOLOR(0.0f, 0.2f, 0.4f, 1.0f));
+//	devcon->OMSetRenderTargets( 1, &backbuffer, depthStencilView );
 
         // select which vertex buffer to display
-        UINT stride = sizeof(VERTEX);
+        UINT stride = sizeof(Vertex);
+//        UINT stride = sizeof(VERTEX);
         UINT offset = 0;
         devcon->IASetVertexBuffers(0, 1, &obj->vertexBuffer, &stride, &offset);
 //        devcon->IASetVertexBuffers(0, 1, &pVBuffer, &stride, &offset);

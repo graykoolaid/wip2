@@ -33,6 +33,7 @@
     <ClInclude Include="GeometryGenerator.h" />
     <ClInclude Include="importer.h" />
     <ClInclude Include="Object.h" />
+    <ClInclude Include="struct.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders.hlsl">

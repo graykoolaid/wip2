@@ -8,20 +8,13 @@
 #include <xnamath.h>
 #include <vector>
 #include "importer.h"
+//#include "struct.h"
 
 using namespace std;
 
 
 
-//struct Vertex
-//{
-//	XMFLOAT3 Pos;
-//	XMFLOAT3 Normal;
-//	XMFLOAT2 Tex;
-//	int 	 texNum;
-//	XMFLOAT3 Tangent;
-//	XMFLOAT3 BiNormal;
-//};
+
 
 class Object
 {

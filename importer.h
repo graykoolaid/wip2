@@ -12,17 +12,18 @@
 #include <D3Dcompiler.h>
 #include <xnamath.h>
 #include <direct.h>
+#include "struct.h"
 using namespace std;
-#endif
-struct Vertex
-{
-	XMFLOAT3 Pos;
-	XMFLOAT3 Normal;
-	XMFLOAT2 Tex;
-	int 	 texNum;
-	XMFLOAT3 Tangent;
-	XMFLOAT3 BiNormal;
-};
+
+//struct Vertex
+//{
+//	XMFLOAT3 Pos;
+//	XMFLOAT3 Normal;
+//	XMFLOAT2 Tex;
+//	int 	 texNum;
+//	XMFLOAT3 Tangent;
+//	XMFLOAT3 BiNormal;
+//};
 
 int Import( char* filename, vector<Vertex>* vert );
 void LoadScene(char* filename);
@@ -31,4 +32,4 @@ void ProcessNode( FbxNode* node, int attributeType);
 void ProcessMesh( FbxNode* node );
 FbxVector2 GetTexCoords( FbxMesh* mesh, int layerIndex, int polygonIndex, int polygonVertexIndex, int vertexIndex );
 
-
+#endif
