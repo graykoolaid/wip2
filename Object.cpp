@@ -18,32 +18,37 @@ void Object::objLoad( char* filename, vector<const wchar_t *> *textures, vector<
 	int tempTexCount;
 
 	vector<Vertex> verts;
-	
+
 //	Object tempO;
 //	objList.push_back( tempO );
 //	objDex = objList.size() - 1;
-	tempTexCount = Import( filename, &vertices );
-
+//	tempTexCount = Import( filename, &vertices );
+	numMeshes = Import( filename, &vertexes );
+	//numMeshes -= 1;
 	//vertices = verts[0];
 	
 //	tempO.indices = indexices;
 //	tempO.vertices  = tempO;
-
+	ID3D11Buffer* tempVB;
 	// Load the Vertex Buffer
-	D3D11_BUFFER_DESC bd;
 
-	ZeroMemory(&bd, sizeof(D3D11_BUFFER_DESC));
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof( Vertex ) * vertices.size();
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	bd.MiscFlags = 0;
-	D3D11_SUBRESOURCE_DATA InitData;
-	InitData.pSysMem = &vertices[0];
-	hr1 = dev1->CreateBuffer( &bd, &InitData, &vertexBuffer );
-	if( FAILED( hr1 ) )
-		return;
+	for( int i = 0; i < numMeshes; i++ )
+	{
+		D3D11_BUFFER_DESC bd;
+		ZeroMemory(&bd, sizeof(D3D11_BUFFER_DESC));
+		bd.Usage = D3D11_USAGE_DEFAULT;
+		bd.ByteWidth = sizeof( Vertex ) * vertexes[i].size();
+		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bd.CPUAccessFlags = 0;
+		bd.MiscFlags = 0;
+		D3D11_SUBRESOURCE_DATA InitData;
+		InitData.pSysMem = &vertexes[i][0];
+		hr1 = dev1->CreateBuffer( &bd, &InitData, &tempVB );
+		if( FAILED( hr1 ) )
+			return;
 
+		vertexBuffer.push_back( tempVB );
+	}
 	// Save the Vertex Buffer for easy access
 	//vertexBuffer = pVBuffer1;
 
@@ -69,9 +74,34 @@ void Object::objLoad( char* filename, vector<const wchar_t *> *textures, vector<
 		NormArray.push_back( g_pTextureRV1 );
 	}
 	
-	numMeshes = 1;//tempTexCount;
+	//numMeshes = 1;//tempTexCount;
 	alpha = 0;
 	textures->resize(0);
 	NormTextures->resize(0);
 	return;
+}
+
+void Object::render( ID3D11DeviceContext * devcon)
+{
+        UINT stride = sizeof(Vertex);
+        UINT offset = 0;
+
+		for( int i = 0; i < numMeshes; i++ )
+		{
+
+			devcon->PSSetShaderResources(0, 1, &texArray[i] );
+			devcon->PSSetShaderResources(1, 1, &NormArray[i] );
+
+			devcon->IASetVertexBuffers(0, 1, &vertexBuffer[i], &stride, &offset);
+
+			//devcon->IASetIndexBuffer(pIBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+			// select which primtive type we are using
+			devcon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			// draw the vertex buffer to the back buffer
+		   // devcon->DrawIndexed(36, 0, 0);
+
+			devcon->Draw( vertexes[i].size(),0);
+		}
 }

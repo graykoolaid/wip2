@@ -3,9 +3,8 @@ cbuffer ConstantBuffer
     float4x4 matFinal;
 }
 
-TextureCube cubeMap;
 Texture2D diffuseTexture[3];
-//Texture2D normalTexture[3];
+Texture2D normalTexture[3];
 
 struct VOut
 {
@@ -48,11 +47,12 @@ VOut VShader( Vin input )
 
 float4 PShader(VOut input) : SV_TARGET
 {
+	//return 1.0;
 	float4 color = 1.0;
-	if( input.Texnum == 0 )
+	//if( input.Texnum == 0 )
 		 color = diffuseTexture[0].Sample( samLinear, input.Tex );
-	else if( input.Texnum == 1 )
-		color =  diffuseTexture[1].Sample( samLinear, input.Tex );
+	//else if( input.Texnum == 1 )
+	//	color =  diffuseTexture[1].Sample( samLinear, input.Tex );
 	//color =  diffuseTexture[2].Sample( samLinear, input.Tex );
 	color.a = 1.0;
 	return color;

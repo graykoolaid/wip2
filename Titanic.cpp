@@ -363,7 +363,7 @@ void InitGraphics()
 
     HRESULT hr = D3DX11CreateShaderResourceViewFromFile(dev, L"mountains1024.dds", 0, 0, &cubeMap, 0 );
 
-    devcon->PSSetShaderResources(0, 1, &cubeMap);
+    //devcon->PSSetShaderResources(0, 1, &cubeMap);
 }
 
 
@@ -423,7 +423,7 @@ void InitPipeline()
 	obj->objLoad( "../assets/Models/bigbadman.fbx", &textures, &normalMap, dev );
 
     devcon->PSSetShaderResources(0, obj->texArray.size(), &obj->texArray[0] );
-    devcon->PSSetShaderResources(3, obj->NormArray.size(), &obj->NormArray[0] );
+    devcon->PSSetShaderResources(1, obj->NormArray.size(), &obj->NormArray[0] );
 
 }
 
@@ -498,7 +498,7 @@ void RenderFrame(void)
 
     static float Time = 0.0f; Time += 0.001f;
 
-
+	
     // set the new values for the constant buffer
 	devcon->UpdateSubresource(pCBuffer, 0, 0, mCam->ViewProj().m, 0, 0);
 
@@ -507,22 +507,8 @@ void RenderFrame(void)
 	devcon->ClearDepthStencilView( zbuffer, D3D11_CLEAR_DEPTH, 1.0f, 0 );
     devcon->ClearRenderTargetView(backbuffer, D3DXCOLOR(0.0f, 0.2f, 0.4f, 1.0f));
 //	devcon->OMSetRenderTargets( 1, &backbuffer, depthStencilView );
+	obj->render( devcon );
 
-        // select which vertex buffer to display
-        UINT stride = sizeof(Vertex);
-//        UINT stride = sizeof(VERTEX);
-        UINT offset = 0;
-        devcon->IASetVertexBuffers(0, 1, &obj->vertexBuffer, &stride, &offset);
-//        devcon->IASetVertexBuffers(0, 1, &pVBuffer, &stride, &offset);
-
-		//devcon->IASetIndexBuffer(pIBuffer, DXGI_FORMAT_R32_UINT, 0);
-
-        // select which primtive type we are using
-        devcon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-        // draw the vertex buffer to the back buffer
-       // devcon->DrawIndexed(36, 0, 0);
-		devcon->Draw(obj->vertices.size(),0);
 
     // switch the back buffer and the front buffer
     swapchain->Present(0, 0);

@@ -23,12 +23,15 @@ public:
 	int numMeshes;
 	int alpha;
 	vector<Vertex>		vertices;
-	ID3D11Buffer*		vertexBuffer;
+	vector<vector<Vertex>> vertexes;
+
+	vector<ID3D11Buffer*>		vertexBuffer;
 	vector<ID3D11ShaderResourceView*> texArray;
 	vector<ID3D11ShaderResourceView*> NormArray;
 
 	Object();
 	void objLoad( char* filename, vector<const wchar_t *> *textures, vector<const wchar_t *> *NormTextures, ID3D11Device* devv );
+	void render(ID3D11DeviceContext *devcon);
 
 private:
 	HRESULT hr1;

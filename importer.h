@@ -25,7 +25,8 @@ using namespace std;
 //	XMFLOAT3 BiNormal;
 //};
 
-int Import( char* filename, vector<Vertex>* vert );
+//int Import( char* filename, vector<Vertex>* vert );
+int Import( char* filename, vector<vector<Vertex>>* vert );
 void LoadScene(char* filename);
 void ProcessScene();
 void ProcessNode( FbxNode* node, int attributeType);
