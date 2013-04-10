@@ -88,7 +88,7 @@ void Object::render( ID3D11DeviceContext * devcon)
 
 		for( int i = 0; i < numMeshes; i++ )
 		{
-
+			devcon->IASetInputLayout(objLayout);
 			devcon->PSSetShaderResources(0, 1, &texArray[i] );
 			devcon->PSSetShaderResources(1, 1, &NormArray[i] );
 

@@ -27,6 +27,7 @@ struct PosNormalTexTan
 	XMFLOAT2 Tex;
 };
 
+
 // global declarations
 IDXGISwapChain *swapchain;             // the pointer to the swap chain interface
 ID3D11Device *dev;                     // the pointer to our Direct3D device interface
@@ -424,7 +425,8 @@ void InitPipeline()
 
     devcon->PSSetShaderResources(0, obj->texArray.size(), &obj->texArray[0] );
     devcon->PSSetShaderResources(1, obj->NormArray.size(), &obj->NormArray[0] );
-
+	dev->CreateInputLayout(ied, 6, VS->GetBufferPointer(), VS->GetBufferSize(), &pLayout);
+	obj->objLayout = pLayout;
 }
 
 

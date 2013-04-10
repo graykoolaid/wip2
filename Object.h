@@ -19,9 +19,11 @@ using namespace std;
 class Object
 {
 public:
-
 	int numMeshes;
 	int alpha;
+
+	ID3D11InputLayout* objLayout;
+
 	vector<Vertex>		vertices;
 	vector<vector<Vertex>> vertexes;
 
