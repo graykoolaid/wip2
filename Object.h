@@ -7,23 +7,21 @@
 #include <d3dx11.h>
 #include <xnamath.h>
 #include <vector>
+#include <string>
 #include "importer.h"
+#include "Renderable.h"
 //#include "struct.h"
 
 using namespace std;
 
-
-
-
-
-class Object
+class Object : public Renderable
 {
 public:
 	int numMeshes;
 	int alpha;
 
 	ID3D11InputLayout* objLayout;
-
+	//ID3D11DeviceContext * devcon1;
 	vector<Vertex>		vertices;
 	vector<vector<Vertex>> vertexes;
 
@@ -31,9 +29,15 @@ public:
 	vector<ID3D11ShaderResourceView*> texArray;
 	vector<ID3D11ShaderResourceView*> NormArray;
 
+	ID3D10Blob *oVS, *oPS;
+	ID3D11VertexShader *opVS;               // the pointer to the vertex shader
+	ID3D11PixelShader *opPS;               // the pointer to the vertex shader
+
+
 	Object();
-	void objLoad( char* filename, vector<const wchar_t *> *textures, vector<const wchar_t *> *NormTextures, ID3D11Device* devv );
-	void render(ID3D11DeviceContext *devcon);
+	void objLoad( char* filename, vector<LPSTR > *textures, vector<LPSTR > *NormTextures, ID3D11Device* devv, ID3D11DeviceContext *devcon );
+	void renderO(ID3D11DeviceContext *devcon);
+	virtual void Render(ID3D11Buffer *sceneBuff, Camera *mCam, int renderType);
 
 private:
 	HRESULT hr1;

@@ -15,15 +15,6 @@
 #include "struct.h"
 using namespace std;
 
-//struct Vertex
-//{
-//	XMFLOAT3 Pos;
-//	XMFLOAT3 Normal;
-//	XMFLOAT2 Tex;
-//	int 	 texNum;
-//	XMFLOAT3 Tangent;
-//	XMFLOAT3 BiNormal;
-//};
 
 //int Import( char* filename, vector<Vertex>* vert );
 int Import( char* filename, vector<vector<Vertex>>* vert );

@@ -7,9 +7,10 @@ Object::Object()
 //---------------------------------------------------------------------------------------
 // Character Loader here
 //---------------------------------------------------------------------------------------
-void Object::objLoad( char* filename, vector<const wchar_t *> *textures, vector<const wchar_t *> *NormTextures, ID3D11Device* devv )
+void Object::objLoad( char* filename, vector<LPSTR> *textures, vector<LPSTR> *NormTextures, ID3D11Device* devv, ID3D11DeviceContext *devcon )
 {
 	dev1 = devv;
+	devcon1 = devcon;
 	vector<XMFLOAT3> vertexices;
 	vector<XMFLOAT3> normexices;
 	vector<XMFLOAT3> texexices;
@@ -78,13 +79,39 @@ void Object::objLoad( char* filename, vector<const wchar_t *> *textures, vector<
 	alpha = 0;
 	textures->resize(0);
 	NormTextures->resize(0);
-	return;
+//	return;
+
+	ID3D10Blob *VS, *PS;
+    D3DX11CompileFromFile("models.hlsl", 0, 0, "VShader", "vs_5_0", 0, 0, 0, &VS, 0, 0);
+    D3DX11CompileFromFile("models.hlsl", 0, 0, "PShader", "ps_5_0", 0, 0, 0, &PS, 0, 0);
+	HRESULT hr;
+	hr = dev1->CreateVertexShader(VS->GetBufferPointer(), VS->GetBufferSize(), NULL, &opVS);
+    if( FAILED(hr) )
+		return ;
+	dev1->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), NULL, &opPS);
+	if( FAILED(hr) )
+		return ;
+	D3D11_INPUT_ELEMENT_DESC ied[] =
+    {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,  0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL",	  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 }, 
+		{ "TEXNUM",   0, DXGI_FORMAT_R32_FLOAT,		  0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 56, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    };
+	devv->CreateInputLayout(ied, 6, VS->GetBufferPointer(), VS->GetBufferSize(), &objLayout);
+
+	oVS = VS;
+	oPS = PS;
 }
 
-void Object::render( ID3D11DeviceContext * devcon)
+void Object::renderO( ID3D11DeviceContext * devcon)
 {
         UINT stride = sizeof(Vertex);
         UINT offset = 0;
+
+
 
 		for( int i = 0; i < numMeshes; i++ )
 		{
@@ -103,5 +130,33 @@ void Object::render( ID3D11DeviceContext * devcon)
 		   // devcon->DrawIndexed(36, 0, 0);
 
 			devcon->Draw( vertexes[i].size(),0);
+		}
+}
+
+void Object::Render(ID3D11Buffer *sceneBuff, Camera *mCam, int renderType)
+{
+	    UINT stride = sizeof(Vertex);
+        UINT offset = 0;
+
+		devcon1->VSSetShader(opVS, 0, 0);
+		devcon1->PSSetShader(opPS, 0, 0);
+
+		for( int i = 0; i < numMeshes; i++ )
+		{
+			devcon1->IASetInputLayout(objLayout);
+			devcon1->PSSetShaderResources(0, 1, &texArray[i] );
+			devcon1->PSSetShaderResources(1, 1, &NormArray[i] );
+
+			devcon1->IASetVertexBuffers(0, 1, &vertexBuffer[i], &stride, &offset);
+
+			//devcon->IASetIndexBuffer(pIBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+			// select which primtive type we are using
+			devcon1->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			// draw the vertex buffer to the back buffer
+		   // devcon->DrawIndexed(36, 0, 0);
+
+			devcon1->Draw( vertexes[i].size(),0);
 		}
 }
